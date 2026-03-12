@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 import type { Snippet, Fragment, Folder } from '@/types'
+import type { Workspace, WorkspaceFile } from '@/types/workspace'
 
 const LANG_EXT_MAP: Record<string, string> = {
   javascript: 'js', typescript: 'ts', python: 'py', java: 'java',
@@ -21,6 +22,42 @@ export interface ExportData {
   exportedAt: string
   folders: Folder[]
   snippets: Snippet[]
+}
+
+export interface WorkspaceExportData {
+  version: number
+  exportedAt: string
+  workspaces: Workspace[]
+}
+
+interface RawWorkspaceFile {
+  id?: string
+  workspaceId?: string
+  name?: string
+  path?: string
+  language?: string
+  content?: string
+  kind?: 'file' | 'folder' | 'virtual'
+  order?: number
+}
+
+interface RawWorkspace {
+  id?: string
+  title?: string
+  description?: string
+  tags?: unknown[]
+  starred?: boolean
+  files?: RawWorkspaceFile[]
+  cover?: string
+  createdAt?: number
+  updatedAt?: number
+  lastOpenedAt?: number
+}
+
+interface RawWorkspaceExportData {
+  version?: number
+  exportedAt?: string
+  workspaces?: RawWorkspace[]
 }
 
 interface RawFragment {
@@ -65,6 +102,23 @@ interface NormalizeImportOptions {
   existingSnippetIds: Set<string>
   generateId?: () => string
   now?: () => number
+}
+
+interface NormalizeWorkspaceImportOptions {
+  existingWorkspaceIds: Set<string>
+  generateId?: () => string
+  now?: () => number
+}
+
+function createDefaultRawWorkspaceFile(): RawWorkspaceFile {
+  return {
+    name: 'index.ts',
+    path: '/index.ts',
+    language: 'typescript',
+    content: '',
+    kind: 'file',
+    order: 0,
+  }
 }
 
 function uniqueId(usedIds: Set<string>, generateId: () => string, preferred?: string): string {
@@ -200,6 +254,96 @@ export function exportAllToJSON(folders: Folder[], snippets: Snippet[]) {
   }
   const json = JSON.stringify(data, null, 2)
   downloadFile(json, `snippets-backup-${formatDate()}.json`, 'application/json')
+}
+
+export function exportWorkspacesToJSON(workspaces: Workspace[]) {
+  const data: WorkspaceExportData = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    workspaces,
+  }
+  const json = JSON.stringify(data, null, 2)
+  downloadFile(json, `workspace-backup-${formatDate()}.json`, 'application/json')
+}
+
+export function exportWorkspaceToJSON(workspace: Workspace) {
+  exportWorkspacesToJSON([workspace])
+}
+
+export function normalizeWorkspaceArchive(
+  data: RawWorkspaceExportData,
+  options: NormalizeWorkspaceImportOptions,
+): WorkspaceExportData {
+  const generateId = options.generateId ?? uuidv4
+  const now = options.now ?? (() => Date.now())
+  const usedWorkspaceIds = new Set(options.existingWorkspaceIds)
+  const importedWorkspaces = Array.isArray(data.workspaces) ? data.workspaces : []
+
+  return {
+    version: typeof data.version === 'number' ? data.version : 1,
+    exportedAt: typeof data.exportedAt === 'string' ? data.exportedAt : new Date().toISOString(),
+    workspaces: importedWorkspaces.map((workspace, workspaceIndex) => {
+      const sourceWorkspaceId = typeof workspace.id === 'string' && workspace.id
+        ? workspace.id
+        : `workspace-${workspaceIndex}`
+      const workspaceId = uniqueId(usedWorkspaceIds, generateId, sourceWorkspaceId)
+
+      const rawFiles: RawWorkspaceFile[] = Array.isArray(workspace.files) && workspace.files.length > 0
+        ? workspace.files
+        : [createDefaultRawWorkspaceFile()]
+
+      const files: WorkspaceFile[] = rawFiles.map((file, fileIndex) => ({
+        id: typeof file.id === 'string' && file.id ? file.id : generateId(),
+        workspaceId,
+        name: typeof file.name === 'string' && file.name.trim() ? file.name.trim() : `file-${fileIndex + 1}.txt`,
+        path: typeof file.path === 'string' && file.path.trim() ? file.path : `/${typeof file.name === 'string' && file.name ? file.name : `file-${fileIndex + 1}.txt`}`,
+        language: typeof file.language === 'string' && file.language ? file.language : 'plaintext',
+        content: typeof file.content === 'string' ? file.content : '',
+        kind: file.kind === 'folder' || file.kind === 'virtual' ? file.kind : 'file',
+        order: typeof file.order === 'number' ? file.order : fileIndex,
+      }))
+
+      return {
+        id: workspaceId,
+        title: typeof workspace.title === 'string' && workspace.title.trim() ? workspace.title.trim() : 'Untitled Workspace',
+        description: typeof workspace.description === 'string' ? workspace.description : '',
+        tags: Array.isArray(workspace.tags)
+          ? workspace.tags.filter((tag): tag is string => typeof tag === 'string')
+          : [],
+        starred: Boolean(workspace.starred),
+        cover: typeof workspace.cover === 'string' ? workspace.cover : undefined,
+        createdAt: normalizeTime(workspace.createdAt, now()),
+        updatedAt: normalizeTime(workspace.updatedAt, now()),
+        lastOpenedAt: typeof workspace.lastOpenedAt === 'number' ? workspace.lastOpenedAt : undefined,
+        files: normalizeGroupedOrders(files, () => workspaceId),
+      }
+    }),
+  }
+}
+
+export async function importWorkspaceArchiveFromJSON(file: File): Promise<WorkspaceExportData> {
+  const text = await file.text()
+  const data = JSON.parse(text) as RawWorkspaceExportData
+  if (!Array.isArray(data.workspaces)) {
+    throw new Error('无效的工作区备份文件格式')
+  }
+
+  return normalizeWorkspaceArchive(data, {
+    existingWorkspaceIds: new Set(),
+  })
+}
+
+export async function importWorkspaceArchiveFromJSONWithOptions(
+  file: File,
+  options: NormalizeWorkspaceImportOptions,
+): Promise<WorkspaceExportData> {
+  const text = await file.text()
+  const data = JSON.parse(text) as RawWorkspaceExportData
+  if (!Array.isArray(data.workspaces)) {
+    throw new Error('无效的工作区备份文件格式')
+  }
+
+  return normalizeWorkspaceArchive(data, options)
 }
 
 export async function importFromJSON(file: File): Promise<ExportData> {

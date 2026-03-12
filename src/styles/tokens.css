@@ -1,0 +1,145 @@
+:root {
+  --radius: 1rem;
+  --glass-blur-sm: 10px;
+  --glass-blur-md: 18px;
+  --glass-panel-opacity: 0.68;
+  --glass-panel-strong-opacity: 0.84;
+  --glass-noise-opacity: 0.045;
+}
+
+html,
+html[data-theme="light"] {
+  color-scheme: light;
+  --background: oklch(0.98 0.004 264);
+  --foreground: oklch(0.2 0.02 264);
+  --card: color-mix(in srgb, white 82%, transparent);
+  --card-foreground: oklch(0.22 0.02 264);
+  --popover: color-mix(in srgb, white 88%, transparent);
+  --popover-foreground: oklch(0.22 0.02 264);
+  --primary: oklch(0.58 0.21 262);
+  --primary-foreground: oklch(0.98 0.004 264);
+  --secondary: oklch(0.95 0.01 264);
+  --secondary-foreground: oklch(0.3 0.02 264);
+  --muted: oklch(0.95 0.01 264);
+  --muted-foreground: oklch(0.52 0.02 264);
+  --accent: oklch(0.94 0.02 262);
+  --accent-foreground: oklch(0.25 0.02 264);
+  --destructive: oklch(0.63 0.23 25);
+  --destructive-foreground: oklch(0.98 0.004 264);
+  --border: color-mix(in srgb, oklch(0.78 0.01 264) 72%, transparent);
+  --input: color-mix(in srgb, white 75%, transparent);
+  --ring: oklch(0.62 0.21 262);
+  --sidebar: color-mix(in srgb, white 72%, transparent);
+  --sidebar-foreground: oklch(0.22 0.02 264);
+  --sidebar-primary: oklch(0.58 0.21 262);
+  --sidebar-primary-foreground: oklch(0.98 0.004 264);
+  --sidebar-accent: oklch(0.95 0.01 264);
+  --sidebar-accent-foreground: oklch(0.24 0.02 264);
+  --sidebar-border: color-mix(in srgb, oklch(0.8 0.01 264) 60%, transparent);
+  --sidebar-ring: oklch(0.62 0.21 262);
+
+  --bg-root: radial-gradient(circle at top left, rgba(132, 157, 255, 0.14), transparent 32%),
+    linear-gradient(180deg, #f8fbff 0%, #eef3fb 100%);
+  --bg-panel: color-mix(in srgb, white 72%, transparent);
+  --bg-elevated: color-mix(in srgb, white 88%, transparent);
+  --bg-glass: rgba(255, 255, 255, var(--glass-panel-opacity));
+  --bg-glass-strong: rgba(255, 255, 255, var(--glass-panel-strong-opacity));
+  --text-primary: oklch(0.22 0.02 264);
+  --text-secondary: oklch(0.42 0.02 264);
+  --text-muted: oklch(0.58 0.015 264);
+  --text-placeholder: oklch(0.68 0.01 264);
+  --glass-border: color-mix(in srgb, oklch(0.86 0.01 264) 58%, transparent);
+  --shadow-panel: 0 12px 30px rgba(115, 133, 166, 0.15);
+  --shadow-floating: 0 20px 50px rgba(115, 133, 166, 0.22);
+  --shadow-soft: 0 8px 18px rgba(115, 133, 166, 0.1);
+  --glow-accent: 0 0 0 1px color-mix(in srgb, var(--primary) 55%, transparent),
+    0 0 28px rgba(98, 121, 255, 0.18);
+
+  --bg-primary: var(--bg-panel);
+  --bg-secondary: var(--bg-glass);
+  --bg-tertiary: var(--bg-elevated);
+  --bg-hover: color-mix(in srgb, white 62%, var(--primary) 10%);
+  --bg-active: color-mix(in srgb, white 48%, var(--primary) 18%);
+  --border-color: var(--glass-border);
+  --border-color-light: color-mix(in srgb, white 78%, transparent);
+  --shadow-color: rgba(115, 133, 166, 0.18);
+  --scrollbar-thumb: rgba(77, 93, 122, 0.18);
+  --scrollbar-thumb-hover: rgba(77, 93, 122, 0.28);
+  --star-color: #f5b12c;
+  --folder-icon-color: #b67a11;
+  --accent-color: color-mix(in srgb, var(--primary) 82%, white);
+  --danger-color: color-mix(in srgb, var(--destructive) 85%, black 8%);
+  --success-color: #33b47b;
+  --tab-bg: color-mix(in srgb, white 72%, transparent);
+  --tab-active-bg: color-mix(in srgb, white 88%, transparent);
+  --tab-border: var(--glass-border);
+  --status-bar-bg: color-mix(in srgb, white 82%, transparent);
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --background: oklch(0.17 0.015 264);
+  --foreground: oklch(0.94 0.01 264);
+  --card: color-mix(in srgb, rgba(22, 26, 37, 0.92) 84%, transparent);
+  --card-foreground: oklch(0.95 0.01 264);
+  --popover: color-mix(in srgb, rgba(18, 22, 31, 0.96) 88%, transparent);
+  --popover-foreground: oklch(0.95 0.01 264);
+  --primary: oklch(0.72 0.18 262);
+  --primary-foreground: oklch(0.17 0.015 264);
+  --secondary: oklch(0.26 0.012 264);
+  --secondary-foreground: oklch(0.93 0.01 264);
+  --muted: oklch(0.24 0.01 264);
+  --muted-foreground: oklch(0.72 0.01 264);
+  --accent: oklch(0.28 0.014 262);
+  --accent-foreground: oklch(0.96 0.01 264);
+  --destructive: oklch(0.67 0.2 25);
+  --destructive-foreground: oklch(0.98 0.004 264);
+  --border: color-mix(in srgb, rgba(164, 179, 255, 0.22) 78%, transparent);
+  --input: color-mix(in srgb, rgba(22, 26, 37, 0.88) 80%, transparent);
+  --ring: oklch(0.74 0.18 262);
+  --sidebar: color-mix(in srgb, rgba(15, 18, 26, 0.82) 88%, transparent);
+  --sidebar-foreground: oklch(0.95 0.01 264);
+  --sidebar-primary: oklch(0.72 0.18 262);
+  --sidebar-primary-foreground: oklch(0.17 0.015 264);
+  --sidebar-accent: oklch(0.26 0.012 264);
+  --sidebar-accent-foreground: oklch(0.95 0.01 264);
+  --sidebar-border: color-mix(in srgb, rgba(164, 179, 255, 0.18) 72%, transparent);
+  --sidebar-ring: oklch(0.74 0.18 262);
+
+  --bg-root: radial-gradient(circle at top left, rgba(118, 134, 255, 0.22), transparent 28%),
+    linear-gradient(180deg, #090c13 0%, #0e1320 52%, #0d1424 100%);
+  --bg-panel: color-mix(in srgb, rgba(18, 22, 31, 0.78) 88%, transparent);
+  --bg-elevated: color-mix(in srgb, rgba(20, 25, 36, 0.92) 90%, transparent);
+  --bg-glass: rgba(20, 25, 36, var(--glass-panel-opacity));
+  --bg-glass-strong: rgba(18, 22, 31, var(--glass-panel-strong-opacity));
+  --text-primary: oklch(0.95 0.01 264);
+  --text-secondary: oklch(0.8 0.01 264);
+  --text-muted: oklch(0.68 0.01 264);
+  --text-placeholder: oklch(0.56 0.01 264);
+  --glass-border: color-mix(in srgb, rgba(164, 179, 255, 0.22) 78%, transparent);
+  --shadow-panel: 0 18px 38px rgba(0, 0, 0, 0.32);
+  --shadow-floating: 0 26px 60px rgba(0, 0, 0, 0.42);
+  --shadow-soft: 0 10px 22px rgba(0, 0, 0, 0.22);
+  --glow-accent: 0 0 0 1px color-mix(in srgb, var(--primary) 60%, transparent),
+    0 0 36px rgba(118, 134, 255, 0.22);
+
+  --bg-primary: var(--bg-panel);
+  --bg-secondary: var(--bg-glass);
+  --bg-tertiary: var(--bg-elevated);
+  --bg-hover: color-mix(in srgb, rgba(40, 47, 66, 0.86) 82%, var(--primary) 12%);
+  --bg-active: color-mix(in srgb, rgba(47, 56, 80, 0.94) 78%, var(--primary) 18%);
+  --border-color: var(--glass-border);
+  --border-color-light: color-mix(in srgb, rgba(164, 179, 255, 0.12) 72%, transparent);
+  --shadow-color: rgba(0, 0, 0, 0.34);
+  --scrollbar-thumb: rgba(216, 225, 255, 0.16);
+  --scrollbar-thumb-hover: rgba(216, 225, 255, 0.26);
+  --star-color: #f5b12c;
+  --folder-icon-color: #dcb76a;
+  --accent-color: color-mix(in srgb, var(--primary) 88%, white 6%);
+  --danger-color: color-mix(in srgb, var(--destructive) 88%, black 10%);
+  --success-color: #52c992;
+  --tab-bg: rgba(17, 21, 30, 0.78);
+  --tab-active-bg: rgba(26, 32, 47, 0.96);
+  --tab-border: var(--glass-border);
+  --status-bar-bg: rgba(14, 18, 26, 0.9);
+}

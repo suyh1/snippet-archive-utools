@@ -1,51 +1,49 @@
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useFolderStore } from '@/stores/folderStore'
-import { useSnippetStore } from '@/stores/snippetStore'
+import { onMounted, onUnmounted } from 'vue'
+import { useAppStore } from '@/stores/appStore'
+import { useEditorStore } from '@/stores/editorStore'
 import { useSettingsStore } from '@/stores/settingsStore'
+import { useWorkspaceStore } from '@/stores/workspaceStore'
+import { useWorkspaceDataStore } from '@/stores/workspaceDataStore'
+import { exportWorkspaceToJSON } from '@/utils/export'
 import { registerShortcuts, unregisterShortcuts } from '@/utils/shortcuts'
-import Sidebar from '@/components/Sidebar.vue'
-import SnippetEditor from '@/components/SnippetEditor.vue'
-import EmptyState from '@/components/EmptyState.vue'
+import AppShell from '@/components/app/AppShell.vue'
 
-const folderStore = useFolderStore()
-const snippetStore = useSnippetStore()
+const appStore = useAppStore()
+const editorStore = useEditorStore()
 const settingsStore = useSettingsStore()
-
-const sidebarRef = ref<InstanceType<typeof Sidebar> | null>(null)
-const editorRef = ref<InstanceType<typeof SnippetEditor> | null>(null)
-
-async function loadData() {
-  settingsStore.loadSettings()
-  await Promise.all([folderStore.init(), snippetStore.init()])
-}
+const workspaceStore = useWorkspaceStore()
+const workspaceDataStore = useWorkspaceDataStore()
 
 onMounted(() => {
-  loadData()
+  settingsStore.loadSettings()
+  workspaceDataStore.init()
 
   registerShortcuts({
-    newSnippet: () => sidebarRef.value?.handleCreateSnippet(),
-    newFolder: () => sidebarRef.value?.handleCreateFolder(),
-    focusSearch: () => sidebarRef.value?.focusSearch(),
-    duplicateSnippet: () => {
-      if (folderStore.selectedType === 'snippet' && folderStore.selectedKey) {
-        snippetStore.duplicateSnippet(folderStore.selectedKey)
+    newWorkspace: () => {
+      const workspace = workspaceDataStore.createWorkspace()
+      if (workspace) {
+        appStore.openWorkspace(workspace.id)
       }
     },
-    save: () => editorRef.value?.forceSave(),
-    exportSnippet: () => editorRef.value?.handleExportFragment(),
-    rename: () => sidebarRef.value?.startRenameForSelected(),
-    deleteItem: () => {
-      if (folderStore.selectedType === 'snippet' && folderStore.selectedKey) {
-        editorRef.value?.handleDelete()
+    focusSearch: () => {
+      document.querySelector<HTMLInputElement>('[data-library-search]')?.focus()
+    },
+    toggleCommandPalette: () => appStore.toggleCommandPalette(),
+    toggleSettings: () => appStore.toggleSettings(),
+    save: () => {
+      if (workspaceStore.currentFile) {
+        editorStore.markSaved(workspaceStore.currentFile.id)
       }
     },
+    exportWorkspace: () => {
+      if (workspaceStore.currentWorkspace) {
+        exportWorkspaceToJSON(workspaceStore.currentWorkspace)
+      }
+    },
+    rename: () => {},
+    deleteItem: () => {},
   })
-
-  if (window.utools) {
-    window.utools.onPluginEnter(() => { loadData() })
-    window.utools.onPluginOut(() => { editorRef.value?.forceSave(true) })
-  }
 })
 
 onUnmounted(() => {
@@ -54,29 +52,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="app-container">
-    <Sidebar ref="sidebarRef" />
-    <div class="main-content">
-      <SnippetEditor v-if="folderStore.selectedType === 'snippet'" ref="editorRef" />
-      <EmptyState v-else />
-    </div>
-  </div>
+  <AppShell />
 </template>
 
 <style scoped>
-.app-container {
-  display: flex;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-  background: var(--bg-primary);
-  transition: background 0.2s;
-}
-
-.main-content {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
 </style>

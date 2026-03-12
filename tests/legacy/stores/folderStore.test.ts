@@ -32,8 +32,8 @@ vi.mock('@/utils/db', () => ({
   },
 }))
 
-import { useFolderStore } from '@/stores/folderStore'
-import { useSnippetStore } from '@/stores/snippetStore'
+import { useFolderStore } from '@/legacy/stores/folderStore'
+import { useSnippetStore } from '@/legacy/stores/snippetStore'
 
 describe('folder store cleanup', () => {
   beforeEach(() => {

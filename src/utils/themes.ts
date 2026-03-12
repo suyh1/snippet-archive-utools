@@ -76,7 +76,9 @@ export function isThemeDark(themeId: string): boolean {
 
 export function applyTheme(themeId: string) {
   if (typeof document === 'undefined') return
-  document.documentElement.setAttribute('data-theme', isThemeDark(themeId) ? 'dark' : 'light')
+  const mode = isThemeDark(themeId) ? 'dark' : 'light'
+  document.documentElement.setAttribute('data-theme', mode)
+  document.documentElement.style.colorScheme = mode
 }
 
 export function loadSavedTheme(): string {

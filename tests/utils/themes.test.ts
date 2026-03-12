@@ -5,9 +5,11 @@ describe('themes', () => {
   it('applies dark or light mode to the document', () => {
     applyTheme('one-dark')
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
+    expect(document.documentElement.style.colorScheme).toBe('dark')
 
     applyTheme('clouds')
     expect(document.documentElement.getAttribute('data-theme')).toBe('light')
+    expect(document.documentElement.style.colorScheme).toBe('light')
   })
 
   it('treats unknown themes as dark by default', () => {

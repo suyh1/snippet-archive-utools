@@ -1,10 +1,10 @@
 interface ShortcutHandlers {
-  newSnippet: () => void
-  newFolder: () => void
+  newWorkspace: () => void
   focusSearch: () => void
-  duplicateSnippet: () => void
+  toggleCommandPalette: () => void
+  toggleSettings: () => void
   save: () => void
-  exportSnippet: () => void
+  exportWorkspace: () => void
   rename: () => void
   deleteItem: () => void
 }
@@ -27,11 +27,7 @@ export function registerShortcuts(handlers: ShortcutHandlers) {
       switch (e.key.toLowerCase()) {
         case 'n':
           e.preventDefault()
-          if (e.shiftKey) {
-            handlers.newFolder()
-          } else {
-            handlers.newSnippet()
-          }
+          handlers.newWorkspace()
           return
         case 'f':
           if (!isInput) {
@@ -39,11 +35,15 @@ export function registerShortcuts(handlers: ShortcutHandlers) {
             handlers.focusSearch()
           }
           return
-        case 'd':
+        case 'k':
           if (!isInput) {
             e.preventDefault()
-            handlers.duplicateSnippet()
+            handlers.toggleCommandPalette()
           }
+          return
+        case ',':
+          e.preventDefault()
+          handlers.toggleSettings()
           return
         case 's':
           e.preventDefault()
@@ -52,7 +52,7 @@ export function registerShortcuts(handlers: ShortcutHandlers) {
         case 'e':
           if (!isInput) {
             e.preventDefault()
-            handlers.exportSnippet()
+            handlers.exportWorkspace()
           }
           return
       }

@@ -32,7 +32,7 @@ vi.mock('@/utils/db', () => ({
   },
 }))
 
-import { useSnippetStore } from '@/stores/snippetStore'
+import { useSnippetStore } from '@/legacy/stores/snippetStore'
 
 function orders(store: ReturnType<typeof useSnippetStore>, folderId: string | null = null) {
   return store.snippetsInFolder(folderId).map((snippet) => ({ title: snippet.title, order: snippet.order }))
