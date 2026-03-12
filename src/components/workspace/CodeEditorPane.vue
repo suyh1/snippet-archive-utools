@@ -5,9 +5,9 @@ import {
   EditorState,
   EditorView,
   getEditorExtensions,
-  getLanguageExtension,
+  loadLanguageExtension,
 } from '@/utils/codemirror'
-import { getThemeExtension } from '@/utils/themes'
+import { loadThemeExtension } from '@/utils/themes'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useEditorStore } from '@/stores/editorStore'
 import { useWorkspaceStore } from '@/stores/workspaceStore'
@@ -31,10 +31,16 @@ const tabSizeCompartment = new Compartment()
 const saveLabel = computed(() => (
   editorStore.currentSaveState === 'dirty' ? '未保存' : '已同步'
 ))
+const isLoadingEditor = ref(false)
 
-function createEditorState() {
+async function createEditorState() {
   const file = workspaceStore.currentFile
   if (!file) return null
+
+  const [languageExtension, themeExtension] = await Promise.all([
+    loadLanguageExtension(file.language),
+    loadThemeExtension(settingsStore.settings.theme),
+  ])
 
   return EditorState.create({
     doc: file.content,
@@ -46,8 +52,8 @@ function createEditorState() {
       minimapCompartment,
       lineNumbersCompartment,
       tabSizeCompartment,
-      langExtension: getLanguageExtension(file.language),
-      themeExtension: getThemeExtension(settingsStore.settings.theme),
+      langExtension: languageExtension,
+      themeExtension,
       settings: {
         ...settingsStore.settings,
         showMinimap: false,
@@ -61,9 +67,10 @@ function createEditorState() {
   })
 }
 
-function mountEditor() {
+async function mountEditor() {
   if (!editorHost.value) return
-  const state = createEditorState()
+  isLoadingEditor.value = true
+  const state = await createEditorState()
   if (!state) return
 
   if (editorView) {
@@ -74,20 +81,21 @@ function mountEditor() {
     state,
     parent: editorHost.value,
   })
+  isLoadingEditor.value = false
 }
 
 watch(() => workspaceStore.currentFile?.id, async () => {
   await nextTick()
-  mountEditor()
+  await mountEditor()
 })
 
 watch(() => settingsStore.settings.theme, async () => {
   await nextTick()
-  mountEditor()
+  await mountEditor()
 })
 
 onMounted(() => {
-  mountEditor()
+  void mountEditor()
 })
 
 onUnmounted(() => {
@@ -103,7 +111,9 @@ onUnmounted(() => {
       <h3>{{ workspaceStore.currentFile?.name }}</h3>
       <span class="status-pill">{{ saveLabel }}</span>
     </div>
-    <div ref="editorHost" class="editor-host" />
+    <div ref="editorHost" class="editor-host">
+      <div v-if="isLoadingEditor" class="editor-loading">Loading editor…</div>
+    </div>
     <p class="editor-path">{{ workspaceStore.currentFile?.path }}</p>
   </section>
 </template>
@@ -139,12 +149,24 @@ onUnmounted(() => {
 }
 
 .editor-host {
+  position: relative;
   min-height: 360px;
   border: 1px solid var(--glass-border);
   border-radius: 24px;
   overflow: hidden;
   background: color-mix(in srgb, var(--bg-glass-strong) 88%, transparent);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.editor-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--bg-glass-strong) 90%, transparent);
+  z-index: 1;
 }
 
 .editor-path {

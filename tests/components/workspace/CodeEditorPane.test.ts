@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { describe, expect, it, vi } from 'vitest'
+import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import { nextTick } from 'vue'
 import CodeEditorPane from '@/components/workspace/CodeEditorPane.vue'
@@ -18,14 +18,19 @@ describe('CodeEditorPane', () => {
         plugins: [pinia],
       },
     })
+    await flushPromises()
+    await nextTick()
 
     const workspaceStore = useWorkspaceStore()
 
-    expect(wrapper.find('.cm-editor').exists()).toBe(true)
+    await vi.waitFor(() => {
+      expect(wrapper.find('.cm-editor').exists()).toBe(true)
+    })
     expect(wrapper.text()).toContain('auth.ts')
 
     workspaceStore.selectFile('auth-service')
     await nextTick()
+    await flushPromises()
 
     expect(wrapper.text()).toContain('refresh-token.ts')
   })

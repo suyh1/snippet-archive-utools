@@ -1,20 +1,3 @@
-import { javascript } from '@codemirror/lang-javascript'
-import { python } from '@codemirror/lang-python'
-import { java } from '@codemirror/lang-java'
-import { cpp } from '@codemirror/lang-cpp'
-import { html } from '@codemirror/lang-html'
-import { css } from '@codemirror/lang-css'
-import { json } from '@codemirror/lang-json'
-import { markdown } from '@codemirror/lang-markdown'
-import { sql } from '@codemirror/lang-sql'
-import { xml } from '@codemirror/lang-xml'
-import { rust } from '@codemirror/lang-rust'
-import { go } from '@codemirror/lang-go'
-import { php } from '@codemirror/lang-php'
-import { yaml } from '@codemirror/lang-yaml'
-import { sass } from '@codemirror/lang-sass'
-import { less } from '@codemirror/lang-less'
-import { vue } from '@codemirror/lang-vue'
 import {
   StreamLanguage,
   syntaxHighlighting,
@@ -31,147 +14,71 @@ import { closeBrackets, closeBracketsKeymap, autocompletion, completionKeymap } 
 import { searchKeymap, highlightSelectionMatches, search } from '@codemirror/search'
 import { EditorState, Compartment } from '@codemirror/state'
 import { showMinimap } from '@replit/codemirror-minimap'
-import { shell } from '@codemirror/legacy-modes/mode/shell'
-import { ruby } from '@codemirror/legacy-modes/mode/ruby'
-import { swift } from '@codemirror/legacy-modes/mode/swift'
-import { lua } from '@codemirror/legacy-modes/mode/lua'
-import { perl } from '@codemirror/legacy-modes/mode/perl'
-import { r } from '@codemirror/legacy-modes/mode/r'
-import { dockerFile as dockerfile } from '@codemirror/legacy-modes/mode/dockerfile'
-import { toml } from '@codemirror/legacy-modes/mode/toml'
-import { diff } from '@codemirror/legacy-modes/mode/diff'
-import { powerShell } from '@codemirror/legacy-modes/mode/powershell'
-import { groovy } from '@codemirror/legacy-modes/mode/groovy'
-import { haskell } from '@codemirror/legacy-modes/mode/haskell'
-import { clojure } from '@codemirror/legacy-modes/mode/clojure'
-import { erlang } from '@codemirror/legacy-modes/mode/erlang'
-import { commonLisp } from '@codemirror/legacy-modes/mode/commonlisp'
-import { scheme } from '@codemirror/legacy-modes/mode/scheme'
-import { nginx } from '@codemirror/legacy-modes/mode/nginx'
-import { protobuf } from '@codemirror/legacy-modes/mode/protobuf'
-import { properties } from '@codemirror/legacy-modes/mode/properties'
-import { pascal } from '@codemirror/legacy-modes/mode/pascal'
-import { fortran } from '@codemirror/legacy-modes/mode/fortran'
-import { vb } from '@codemirror/legacy-modes/mode/vb'
-import { coffeeScript as coffeescript } from '@codemirror/legacy-modes/mode/coffeescript'
-import { julia } from '@codemirror/legacy-modes/mode/julia'
-import { elm } from '@codemirror/legacy-modes/mode/elm'
 import type { Extension } from '@codemirror/state'
 import type { Settings } from '@/types'
 
 export { Compartment, EditorState } from '@codemirror/state'
 export { EditorView } from '@codemirror/view'
 
-// Kotlin and C# use the clike mode
-import { kotlin, cSharp, scala, dart, objectiveC } from './clike-langs'
+const languageLoaders: Record<string, () => Promise<Extension | null>> = {
+  javascript: async () => (await import('@codemirror/lang-javascript')).javascript({ jsx: true }),
+  typescript: async () => (await import('@codemirror/lang-javascript')).javascript({ typescript: true, jsx: true }),
+  python: async () => (await import('@codemirror/lang-python')).python(),
+  java: async () => (await import('@codemirror/lang-java')).java(),
+  cpp: async () => (await import('@codemirror/lang-cpp')).cpp(),
+  c: async () => (await import('@codemirror/lang-cpp')).cpp(),
+  html: async () => (await import('@codemirror/lang-html')).html(),
+  css: async () => (await import('@codemirror/lang-css')).css(),
+  json: async () => (await import('@codemirror/lang-json')).json(),
+  markdown: async () => (await import('@codemirror/lang-markdown')).markdown(),
+  sql: async () => (await import('@codemirror/lang-sql')).sql(),
+  xml: async () => (await import('@codemirror/lang-xml')).xml(),
+  rust: async () => (await import('@codemirror/lang-rust')).rust(),
+  go: async () => (await import('@codemirror/lang-go')).go(),
+  php: async () => (await import('@codemirror/lang-php')).php(),
+  yaml: async () => (await import('@codemirror/lang-yaml')).yaml(),
+  shell: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/shell')).shell),
+  bash: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/shell')).shell),
+  ruby: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/ruby')).ruby),
+  swift: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/swift')).swift),
+  kotlin: async () => StreamLanguage.define((await import('./clike-langs')).kotlin),
+  csharp: async () => StreamLanguage.define((await import('./clike-langs')).cSharp),
+  scala: async () => StreamLanguage.define((await import('./clike-langs')).scala),
+  dart: async () => StreamLanguage.define((await import('./clike-langs')).dart),
+  objectivec: async () => StreamLanguage.define((await import('./clike-langs')).objectiveC),
+  lua: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/lua')).lua),
+  perl: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/perl')).perl),
+  r: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/r')).r),
+  dockerfile: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/dockerfile')).dockerFile),
+  toml: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/toml')).toml),
+  diff: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/diff')).diff),
+  powershell: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/powershell')).powerShell),
+  groovy: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/groovy')).groovy),
+  haskell: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/haskell')).haskell),
+  clojure: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/clojure')).clojure),
+  erlang: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/erlang')).erlang),
+  lisp: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/commonlisp')).commonLisp),
+  scheme: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/scheme')).scheme),
+  nginx: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/nginx')).nginx),
+  protobuf: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/protobuf')).protobuf),
+  properties: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/properties')).properties),
+  ini: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/properties')).properties),
+  pascal: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/pascal')).pascal),
+  delphi: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/pascal')).pascal),
+  fortran: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/fortran')).fortran),
+  vb: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/vb')).vb),
+  coffeescript: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/coffeescript')).coffeeScript),
+  julia: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/julia')).julia),
+  elm: async () => StreamLanguage.define((await import('@codemirror/legacy-modes/mode/elm')).elm),
+  sass: async () => (await import('@codemirror/lang-sass')).sass({ indented: true }),
+  scss: async () => (await import('@codemirror/lang-sass')).sass({ indented: false }),
+  less: async () => (await import('@codemirror/lang-less')).less(),
+  vue: async () => (await import('@codemirror/lang-vue')).vue(),
+}
 
-export function getLanguageExtension(lang: string): Extension | null {
-  switch (lang) {
-    case 'javascript':
-      return javascript({ jsx: true })
-    case 'typescript':
-      return javascript({ typescript: true, jsx: true })
-    case 'python':
-      return python()
-    case 'java':
-      return java()
-    case 'cpp':
-    case 'c':
-      return cpp()
-    case 'html':
-      return html()
-    case 'css':
-      return css()
-    case 'json':
-      return json()
-    case 'markdown':
-      return markdown()
-    case 'sql':
-      return sql()
-    case 'xml':
-      return xml()
-    case 'rust':
-      return rust()
-    case 'go':
-      return go()
-    case 'php':
-      return php()
-    case 'yaml':
-      return yaml()
-    case 'shell':
-    case 'bash':
-      return StreamLanguage.define(shell)
-    case 'ruby':
-      return StreamLanguage.define(ruby)
-    case 'swift':
-      return StreamLanguage.define(swift)
-    case 'kotlin':
-      return StreamLanguage.define(kotlin)
-    case 'csharp':
-      return StreamLanguage.define(cSharp)
-    case 'scala':
-      return StreamLanguage.define(scala)
-    case 'dart':
-      return StreamLanguage.define(dart)
-    case 'objectivec':
-      return StreamLanguage.define(objectiveC)
-    case 'lua':
-      return StreamLanguage.define(lua)
-    case 'perl':
-      return StreamLanguage.define(perl)
-    case 'r':
-      return StreamLanguage.define(r)
-    case 'dockerfile':
-      return StreamLanguage.define(dockerfile)
-    case 'toml':
-      return StreamLanguage.define(toml)
-    case 'diff':
-      return StreamLanguage.define(diff)
-    case 'powershell':
-      return StreamLanguage.define(powerShell)
-    case 'groovy':
-      return StreamLanguage.define(groovy)
-    case 'haskell':
-      return StreamLanguage.define(haskell)
-    case 'clojure':
-      return StreamLanguage.define(clojure)
-    case 'erlang':
-      return StreamLanguage.define(erlang)
-    case 'lisp':
-      return StreamLanguage.define(commonLisp)
-    case 'scheme':
-      return StreamLanguage.define(scheme)
-    case 'nginx':
-      return StreamLanguage.define(nginx)
-    case 'protobuf':
-      return StreamLanguage.define(protobuf)
-    case 'properties':
-    case 'ini':
-      return StreamLanguage.define(properties)
-    case 'pascal':
-    case 'delphi':
-      return StreamLanguage.define(pascal)
-    case 'fortran':
-      return StreamLanguage.define(fortran)
-    case 'vb':
-      return StreamLanguage.define(vb)
-    case 'coffeescript':
-      return StreamLanguage.define(coffeescript)
-    case 'julia':
-      return StreamLanguage.define(julia)
-    case 'elm':
-      return StreamLanguage.define(elm)
-    case 'sass':
-      return sass({ indented: true })
-    case 'scss':
-      return sass({ indented: false })
-    case 'less':
-      return less()
-    case 'vue':
-      return vue()
-    default:
-      return null
-  }
+export async function loadLanguageExtension(lang: string): Promise<Extension | null> {
+  const loader = languageLoaders[lang]
+  return loader ? loader() : null
 }
 
 /**

@@ -1,21 +1,3 @@
-import { oneDark } from '@codemirror/theme-one-dark'
-import {
-  dracula,
-  solarizedLight,
-  coolGlow,
-  amy,
-  ayuLight,
-  barf,
-  bespin,
-  birdsOfParadise,
-  cobalt,
-  espresso,
-  noctisLilac,
-  rosePineDawn,
-  smoothy,
-  tomorrow,
-  clouds,
-} from 'thememirror'
 import type { Extension } from '@codemirror/state'
 
 export interface ThemeOption {
@@ -45,26 +27,25 @@ export const EDITOR_THEMES: ThemeOption[] = [
   { label: 'Tomorrow', value: 'tomorrow', dark: false },
 ]
 
-export function getThemeExtension(themeId: string): Extension {
-  switch (themeId) {
-    case 'one-dark': return oneDark
-    case 'dracula': return dracula
-    case 'solarized-light': return solarizedLight
-    case 'cool-glow': return coolGlow
-    case 'amy': return amy
-    case 'ayu-light': return ayuLight
-    case 'barf': return barf
-    case 'bespin': return bespin
-    case 'birds-of-paradise': return birdsOfParadise
-    case 'cobalt': return cobalt
-    case 'espresso': return espresso
-    case 'noctis-lilac': return noctisLilac
-    case 'rose-pine-dawn': return rosePineDawn
-    case 'smoothy': return smoothy
-    case 'tomorrow': return tomorrow
-    case 'clouds': return clouds
-    default: return oneDark
-  }
+type ThemeLoader = () => Promise<Extension>
+
+const themeLoaders: Record<string, ThemeLoader> = {
+  'one-dark': async () => (await import('@codemirror/theme-one-dark')).oneDark,
+  dracula: async () => (await import('thememirror')).dracula,
+  'solarized-light': async () => (await import('thememirror')).solarizedLight,
+  'cool-glow': async () => (await import('thememirror')).coolGlow,
+  amy: async () => (await import('thememirror')).amy,
+  'ayu-light': async () => (await import('thememirror')).ayuLight,
+  barf: async () => (await import('thememirror')).barf,
+  bespin: async () => (await import('thememirror')).bespin,
+  'birds-of-paradise': async () => (await import('thememirror')).birdsOfParadise,
+  cobalt: async () => (await import('thememirror')).cobalt,
+  espresso: async () => (await import('thememirror')).espresso,
+  'noctis-lilac': async () => (await import('thememirror')).noctisLilac,
+  'rose-pine-dawn': async () => (await import('thememirror')).rosePineDawn,
+  smoothy: async () => (await import('thememirror')).smoothy,
+  tomorrow: async () => (await import('thememirror')).tomorrow,
+  clouds: async () => (await import('thememirror')).clouds,
 }
 
 const THEME_STORAGE_KEY = 'editor-theme'
@@ -79,6 +60,11 @@ export function applyTheme(themeId: string) {
   const mode = isThemeDark(themeId) ? 'dark' : 'light'
   document.documentElement.setAttribute('data-theme', mode)
   document.documentElement.style.colorScheme = mode
+}
+
+export async function loadThemeExtension(themeId: string): Promise<Extension> {
+  const loader = themeLoaders[themeId] ?? themeLoaders[DEFAULT_THEME]
+  return loader()
 }
 
 export function loadSavedTheme(): string {

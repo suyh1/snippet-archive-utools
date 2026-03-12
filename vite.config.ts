@@ -13,17 +13,33 @@ export default defineConfig({
           if (!id.includes('node_modules')) return undefined
 
           if (
-            id.includes('/@codemirror/lang-') ||
-            id.includes('/@codemirror/legacy-modes/')
+            id.includes('/thememirror/') ||
+            id.includes('/@codemirror/theme-one-dark/')
           ) {
-            return 'vendor-codemirror-langs'
+            return 'vendor-codemirror-themes'
+          }
+
+          if (
+            id.includes('/@codemirror/search/') ||
+            id.includes('/@codemirror/autocomplete/') ||
+            id.includes('/@codemirror/commands/') ||
+            id.includes('/@replit/codemirror-minimap/')
+          ) {
+            return 'vendor-codemirror-tools'
           }
 
           if (
             id.includes('/codemirror/') ||
-            id.includes('/@codemirror/') ||
-            id.includes('/@lezer/') ||
-            id.includes('/thememirror/')
+            id.includes('/@codemirror/state/') ||
+            id.includes('/@codemirror/view/') ||
+            id.includes('/@codemirror/language/') ||
+            id.includes('/crelt/') ||
+            id.includes('/style-mod/') ||
+            id.includes('/w3c-keyname/') ||
+            id.includes('/@marijn/find-cluster-break/') ||
+            id.includes('/@lezer/common/') ||
+            id.includes('/@lezer/highlight/') ||
+            id.includes('/@lezer/lr/')
           ) {
             return 'vendor-codemirror-core'
           }
