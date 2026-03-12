@@ -5,6 +5,7 @@ import { nextTick } from 'vue'
 import InspectorPanel from '@/components/workspace/InspectorPanel.vue'
 import { useAppStore } from '@/stores/appStore'
 import { useWorkspaceDataStore } from '@/stores/workspaceDataStore'
+import { useWorkspaceStore } from '@/stores/workspaceStore'
 
 const { exportWorkspaceToJSON } = vi.hoisted(() => ({
   exportWorkspaceToJSON: vi.fn(),
@@ -96,5 +97,28 @@ describe('InspectorPanel', () => {
     expect(workspaceDataStore.getWorkspace('workspace-auth')).toBeUndefined()
     expect(appStore.currentView).toBe('library')
     expect(appStore.activeWorkspaceId).toBeNull()
+  })
+
+  it('renames the selected folder and updates its path', async () => {
+    const pinia = createPinia()
+    const appStore = useAppStore(pinia)
+    const workspaceDataStore = useWorkspaceDataStore(pinia)
+    workspaceDataStore.init()
+    appStore.openWorkspace('workspace-auth')
+
+    const workspaceStore = useWorkspaceStore(pinia)
+    workspaceStore.createFolder()
+    workspaceStore.selectFolder('/src/new-folder-1')
+
+    const wrapper = mount(InspectorPanel, {
+      global: {
+        plugins: [pinia],
+      },
+    })
+
+    await wrapper.get('[data-field="folder-name"]').setValue('services')
+    await nextTick()
+
+    expect(workspaceDataStore.getWorkspace('workspace-auth')?.files.some((file) => file.path === '/src/services')).toBe(true)
   })
 })

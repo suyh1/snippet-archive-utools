@@ -79,7 +79,8 @@ describe('workspace file operations', () => {
     const workspaceStore = useWorkspaceStore()
     const created = workspaceStore.createFile()
 
-    expect(created?.name).toBe('untitled-3.ts')
+    expect(created?.name).toBe('untitled-1.ts')
+    expect(created?.path).toBe('/src/untitled-1.ts')
     expect(workspaceStore.currentFile?.id).toBe(created?.id)
     expect(workspaceDataStore.getWorkspace('workspace-auth')?.files).toHaveLength(3)
   })
@@ -111,5 +112,51 @@ describe('workspace file operations', () => {
     expect(deleted).toBe(true)
     expect(workspaceStore.currentFile?.id).toBe('auth-index')
     expect(workspaceDataStore.getWorkspace('workspace-auth')?.files).toHaveLength(1)
+  })
+
+  it('creates a folder in the workspace', () => {
+    const appStore = useAppStore()
+    const workspaceDataStore = useWorkspaceDataStore()
+    workspaceDataStore.init()
+    appStore.openWorkspace('workspace-auth')
+
+    const workspaceStore = useWorkspaceStore()
+    const created = workspaceStore.createFolder()
+
+    expect(created?.kind).toBe('folder')
+    expect(created?.path).toBe('/src/new-folder-1')
+    expect(workspaceDataStore.getWorkspace('workspace-auth')?.files.some((file) => file.path === '/src/new-folder-1')).toBe(true)
+  })
+
+  it('creates a file inside the selected folder', () => {
+    const appStore = useAppStore()
+    const workspaceDataStore = useWorkspaceDataStore()
+    workspaceDataStore.init()
+    appStore.openWorkspace('workspace-auth')
+
+    const workspaceStore = useWorkspaceStore()
+    workspaceStore.createFolder()
+    workspaceStore.selectFolder('/src/new-folder-1')
+    const created = workspaceStore.createFile()
+
+    expect(created?.path).toBe('/src/new-folder-1/untitled-1.ts')
+  })
+
+  it('renames a folder and updates descendant file paths', () => {
+    const appStore = useAppStore()
+    const workspaceDataStore = useWorkspaceDataStore()
+    workspaceDataStore.init()
+    appStore.openWorkspace('workspace-auth')
+
+    const workspaceStore = useWorkspaceStore()
+    workspaceStore.createFolder()
+    workspaceStore.selectFolder('/src/new-folder-1')
+    const created = workspaceStore.createFile()
+
+    workspaceStore.renameFolder('/src/new-folder-1', 'core')
+
+    expect(workspaceDataStore.getWorkspace('workspace-auth')?.files.some((file) => file.path === '/src/core')).toBe(true)
+    expect(workspaceDataStore.getWorkspace('workspace-auth')?.files.some((file) => file.path === '/src/core/untitled-1.ts')).toBe(true)
+    expect(created?.path).toBe('/src/new-folder-1/untitled-1.ts')
   })
 })

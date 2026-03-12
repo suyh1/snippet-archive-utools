@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { summarizeWorkspace } from '@/lib/workspace-metadata'
 import type { Workspace } from '@/types/workspace'
 
-defineProps<{
+const props = defineProps<{
   workspace: Workspace
   selected?: boolean
 }>()
@@ -10,6 +12,8 @@ const emit = defineEmits<{
   select: [workspaceId: string]
   open: [workspaceId: string]
 }>()
+
+const summary = computed(() => summarizeWorkspace(props.workspace))
 </script>
 
 <template>
@@ -20,13 +24,20 @@ const emit = defineEmits<{
   >
     <div class="workspace-card__glow" />
     <div class="workspace-card__meta">
-      <span class="workspace-card__eyebrow">{{ workspace.files.length }} files</span>
+      <span class="workspace-card__eyebrow">{{ summary.fileCount }} 文件 · {{ summary.folderCount }} 文件夹</span>
       <span v-if="workspace.starred" class="workspace-card__star">★</span>
     </div>
 
     <div class="workspace-card__body">
       <h3>{{ workspace.title }}</h3>
       <p>{{ workspace.description }}</p>
+    </div>
+
+    <div class="workspace-card__stats">
+      <span v-if="summary.primaryLanguage" class="workspace-card__language">
+        {{ summary.primaryLanguage }}
+      </span>
+      <span class="workspace-card__updated">最近更新</span>
     </div>
 
     <div class="workspace-card__tags">
@@ -106,6 +117,22 @@ const emit = defineEmits<{
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.workspace-card__stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.workspace-card__language,
+.workspace-card__updated {
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: color-mix(in srgb, var(--bg-glass) 86%, transparent);
+  color: var(--text-secondary);
+  font-size: 12px;
 }
 
 .workspace-card__tags span {

@@ -39,7 +39,7 @@ describe('WorkspaceHeader', () => {
     await wrapper.get('[data-action="header-create-file"]').trigger('click')
     await nextTick()
 
-    expect(workspaceStore.currentFile?.name).toBe('untitled-3.ts')
+    expect(workspaceStore.currentFile?.name).toBe('untitled-1.ts')
   })
 
   it('marks current file saved from the header save action', async () => {

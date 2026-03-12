@@ -44,12 +44,59 @@ describe('WorkspaceTree', () => {
     await wrapper.get('[data-action="create-file"]').trigger('click')
     await nextTick()
 
-    expect(workspaceStore.currentFile?.name).toBe('untitled-3.ts')
-    expect(wrapper.text()).toContain('untitled-3.ts')
+    expect(workspaceStore.currentFile?.name).toBe('untitled-1.ts')
+    expect(wrapper.text()).toContain('untitled-1.ts')
 
     await wrapper.get('[data-action="delete-current-file"]').trigger('click')
     await nextTick()
 
     expect(wrapper.text()).not.toContain('untitled-3.ts')
+  })
+
+  it('renders folders from workspace paths and allows creating a folder', async () => {
+    const pinia = createPinia()
+    const appStore = useAppStore(pinia)
+    appStore.openWorkspace('workspace-auth')
+
+    const wrapper = mount(WorkspaceTree, {
+      global: {
+        plugins: [pinia],
+      },
+    })
+
+    expect(wrapper.find('[data-folder-path="/src"]').exists()).toBe(true)
+
+    await wrapper.get('[data-action="create-folder"]').trigger('click')
+    await nextTick()
+
+    expect(wrapper.find('[data-folder-path="/src/new-folder-1"]').exists()).toBe(true)
+  })
+
+  it('moves a file into a folder through drag and drop', async () => {
+    const pinia = createPinia()
+    const appStore = useAppStore(pinia)
+    appStore.openWorkspace('workspace-auth')
+
+    const wrapper = mount(WorkspaceTree, {
+      global: {
+        plugins: [pinia],
+      },
+    })
+
+    const workspaceStore = useWorkspaceStore()
+    workspaceStore.createFolder()
+    await nextTick()
+
+    await wrapper.get('[data-file-id="auth-index"]').trigger('dragstart')
+    await wrapper.get('[data-folder-path="/src"]').trigger('drop')
+    await nextTick()
+
+    expect(workspaceStore.currentWorkspace?.files.find((file) => file.id === 'auth-index')?.path).toBe('/src/auth.ts')
+
+    await wrapper.get('[data-file-id="auth-index"]').trigger('dragstart')
+    await wrapper.get('[data-folder-path="/src/new-folder-1"]').trigger('drop')
+    await nextTick()
+
+    expect(workspaceStore.currentWorkspace?.files.find((file) => file.id === 'auth-index')?.path).toBe('/src/new-folder-1/auth.ts')
   })
 })

@@ -10,6 +10,9 @@ const workspaceStore = useWorkspaceStore()
 const workspaceDataStore = useWorkspaceDataStore()
 
 const workspace = computed(() => workspaceStore.currentWorkspace)
+const selectedFolder = computed(() => (
+  workspace.value?.files.find((file) => file.kind === 'folder' && file.path === workspaceStore.selectedFolderPath) ?? null
+))
 
 function updateWorkspaceField(field: 'title' | 'description', value: string) {
   if (!workspace.value) return
@@ -32,6 +35,11 @@ function handleDeleteWorkspace() {
 function updateFileName(value: string) {
   if (!workspaceStore.currentFile) return
   workspaceStore.renameFile(workspaceStore.currentFile.id, value)
+}
+
+function updateFolderName(value: string) {
+  if (!selectedFolder.value) return
+  workspaceStore.renameFolder(selectedFolder.value.path, value)
 }
 </script>
 
@@ -69,6 +77,17 @@ function updateFileName(value: string) {
         @input="updateFileName(($event.target as HTMLInputElement).value)"
       >
       <span>{{ workspaceStore.currentFile?.path }}</span>
+    </div>
+
+    <div v-if="selectedFolder" class="inspector-block">
+      <span class="label">当前文件夹</span>
+      <input
+        :value="selectedFolder.name"
+        data-field="folder-name"
+        type="text"
+        @input="updateFolderName(($event.target as HTMLInputElement).value)"
+      >
+      <span>{{ selectedFolder.path }}</span>
     </div>
 
     <div class="workspace-actions">

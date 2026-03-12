@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { summarizeWorkspace } from '@/lib/workspace-metadata'
 import { useLibraryStore } from '@/stores/libraryStore'
 
 const emit = defineEmits<{
@@ -9,6 +10,7 @@ const emit = defineEmits<{
 const libraryStore = useLibraryStore()
 
 const workspace = computed(() => libraryStore.selectedWorkspace)
+const summary = computed(() => (workspace.value ? summarizeWorkspace(workspace.value) : null))
 </script>
 
 <template>
@@ -19,6 +21,21 @@ const workspace = computed(() => libraryStore.selectedWorkspace)
       <p>{{ workspace.title }} · {{ workspace.description }}</p>
 
       <div class="preview-meta">
+        <div v-if="summary" class="summary-grid">
+          <div class="summary-item">
+            <span class="label">文件</span>
+            <strong>{{ summary.fileCount }}</strong>
+          </div>
+          <div class="summary-item">
+            <span class="label">文件夹</span>
+            <strong>{{ summary.folderCount }}</strong>
+          </div>
+          <div class="summary-item" v-if="summary.primaryLanguage">
+            <span class="label">主语言</span>
+            <strong>{{ summary.primaryLanguage }}</strong>
+          </div>
+        </div>
+
         <div>
           <span class="label">标签</span>
           <div class="tags">
@@ -80,6 +97,25 @@ const workspace = computed(() => libraryStore.selectedWorkspace)
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--bg-glass) 86%, transparent);
+}
+
+.summary-item strong {
+  color: var(--text-primary);
 }
 
 .tags {
